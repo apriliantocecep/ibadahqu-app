@@ -136,7 +136,7 @@ Hasil:
    - **Single purpose:** menampilkan jadwal salat dan countdown ke waktu salat berikutnya.
    - **Remote code:** *No* — semua kode dibundel di dalam paket.
    - **Data usage:** lokasi hanya disimpan di perangkat (`chrome.storage.local`); yang dikirim ke server hanya ID kota myQuran, tidak ada data pribadi yang dikumpulkan atau dijual.
-   - Sediakan URL **kebijakan privasi** (bisa halaman sederhana di repo/website yang menjelaskan poin di atas).
+   - **Privacy policy URL:** gunakan [`PRIVACY.md`](PRIVACY.md), mis. `https://github.com/apriliantocecep/ibadahqu-app/blob/main/PRIVACY.md`.
 6. Tab **Distribution** — pilih *Public* / *Unlisted* dan negara.
 7. Klik **Submit for review**. Proses review biasanya beberapa hari kerja; status bisa dipantau di dashboard.
 
@@ -177,4 +177,4 @@ Hasil:
 
 ---
 
-Data jadwal © Bimas Islam Kemenag RI via [myQuran](https://api.myquran.com).
+Data jadwal © Bimas Islam Kemenag RI via [myQuran](https://api.myquran.com). · [Kebijakan Privasi](PRIVACY.md)
