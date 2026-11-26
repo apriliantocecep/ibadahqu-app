@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Jadwal Ibadah",
+  "short_name": "Jadwal Ibadah",
+  "version": "1.0.0",
+  "description": "Jadwal salat Kemenag (myQuran) dengan countdown di ikon, notifikasi masuk waktu, dan Picture-in-Picture. Hari Jumat menuju salat Jumat.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Jadwal Ibadah",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "alarms", "notifications", "geolocation"],
+  "host_permissions": ["https://api.myquran.com/*"]
+}

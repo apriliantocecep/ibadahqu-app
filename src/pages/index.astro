@@ -1,0 +1,315 @@
+---
+import { CITIES } from '../lib/cities';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Jadwal salat harian dengan countdown Picture-in-Picture ke waktu salat terdekat." />
+    <meta name="theme-color" content="#0b3d30" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Jadwal Ibadah</title>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="top">
+        <div>
+          <h1>Jadwal Ibadah</h1>
+          <p class="dates"><span id="tgl-masehi">—</span><span class="sep">·</span><span id="tgl-hijri"></span></p>
+        </div>
+        <div class="clock" id="clock" aria-label="Jam sekarang">--:--:--</div>
+      </header>
+
+      <div class="banner" id="friday-banner" hidden>
+        Hari ini hari Jumat — countdown siang hari diarahkan ke salat <strong>Jumat</strong>.
+      </div>
+
+      <section class="card countdown" id="countdown" aria-live="polite">
+        <p class="cd-label" id="cd-label">Menghitung…</p>
+        <p class="cd-time" id="cd-time">--:--:--</p>
+        <p class="cd-at" id="cd-at"></p>
+        <p class="cd-note" id="cd-note"></p>
+        <div class="bar"><i id="cd-bar"></i></div>
+
+        <div class="actions">
+          <button id="btn-pip" class="btn primary" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+              ><rect x="2.5" y="4.5" width="19" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"
+              ></rect><rect x="12" y="11" width="7" height="6" rx="1" fill="currentColor"></rect></svg
+            >
+            <span>Buka Picture-in-Picture</span>
+          </button>
+          <label class="toggle">
+            <input type="checkbox" id="chk-bunyi" />
+            <span>Bunyi saat masuk waktu</span>
+          </label>
+        </div>
+        <p class="hint" id="pip-hint"></p>
+      </section>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Hari ini</h2>
+          <ul class="list" id="jadwal-list"></ul>
+          <div class="source-line">
+            <p class="source" id="sumber">—</p>
+            <button id="btn-reload" class="link" type="button" hidden>Coba lagi</button>
+          </div>
+        </section>
+
+        <div class="stack">
+        <section class="card">
+          <h2>Lokasi</h2>
+          <p class="loc-name" id="lokasi-nama">—</p>
+          <p class="muted" id="lokasi-detail"></p>
+          <label class="field">
+            <span>Pilih kota</span>
+            <select id="kota">
+              <option value="" disabled>— Lokasi khusus —</option>
+              {CITIES.map((c) => <option value={c.name}>{c.name}</option>)}
+            </select>
+          </label>
+          <button id="btn-gps" class="btn" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+              ><circle cx="12" cy="12" r="3.2" fill="currentColor"></circle><circle
+                cx="12"
+                cy="12"
+                r="7.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"></circle><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" stroke="currentColor" stroke-width="1.8"
+              ></path></svg
+            >
+            Gunakan lokasi saya
+          </button>
+          <p class="muted small" id="gps-msg"></p>
+          <p class="muted small method">
+            Jadwal utama dari <a href="https://api.myquran.com" target="_blank" rel="noopener">myQuran</a> (data Bimas
+            Islam Kemenag RI) dan disimpan di perangkat. Bila tidak tersedia, jadwal dihitung lokal dengan parameter
+            Kemenag: Subuh 20°, Isya 18°, Ashar Syafi'i, ihtiyat 2 menit, Imsak 10 menit sebelum Subuh.
+          </p>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Koreksi waktu</h2>
+            <button id="btn-reset-koreksi" class="link" type="button">Reset</button>
+          </div>
+          <div class="corr-list" id="koreksi-list"></div>
+          <p class="muted small">
+            Geser tiap waktu ±1 menit (maks. ±30) agar sesuai jadwal masjid setempat. Berlaku untuk semua lokasi dan
+            tersimpan di perangkat ini.
+          </p>
+        </section>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>7 hari ke depan</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th><th>Imsak</th><th>Subuh</th><th>Terbit</th><th>Dzuhur</th><th>Ashar</th><th>Maghrib</th><th
+                  >Isya</th
+                >
+              </tr>
+            </thead>
+            <tbody id="pekan-body"></tbody>
+          </table>
+        </div>
+        <p class="muted small">Baris berwarna emas = hari Jumat (kolom Dzuhur = salat Jumat). Tanda * = dihitung lokal karena data
+          Kemenag belum termuat.</p>
+      </section>
+    </main>
+
+    <script>
+      import '../scripts/app.ts';
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #f3f7f5;
+    --surface: #ffffff;
+    --text: #0d2620;
+    --muted: #5b6f69;
+    --border: #dbe6e1;
+    --accent: #0f7a5c;
+    --accent-soft: #e2f3ec;
+    --gold: #b7860b;
+    --gold-soft: #fbf3dc;
+    --hero-from: #0f5a45;
+    --hero-to: #062b22;
+    --hero-text: #ecfdf5;
+    --hero-label: #a7f3d0;
+    --bar: #34d399;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #07130f;
+      --surface: #0e1f1a;
+      --text: #e4f2ec;
+      --muted: #8aa39b;
+      --border: #1d3530;
+      --accent: #34d399;
+      --accent-soft: #123229;
+      --gold: #fbbf24;
+      --gold-soft: #2e2408;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  p { margin: 0; }
+  h1, h2 { margin: 0; line-height: 1.2; }
+  [hidden] { display: none !important; }
+
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 1.6rem; letter-spacing: -0.01em; }
+  .dates { color: var(--muted); font-size: 0.95rem; }
+  .sep { margin: 0 6px; }
+  .clock { font-variant-numeric: tabular-nums; font-size: 1.4rem; font-weight: 600; color: var(--accent); }
+
+  .banner {
+    background: var(--gold-soft);
+    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .card h2 { font-size: 1rem; margin-bottom: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* countdown hero */
+  .countdown {
+    background: radial-gradient(120% 140% at 0% 0%, var(--hero-from) 0%, var(--hero-to) 70%);
+    color: var(--hero-text);
+    border: none;
+    padding: 28px 24px;
+  }
+  .countdown.jumat { --hero-from: #7a5a12; --hero-to: #2a1d04; --hero-label: #fde68a; --bar: #fbbf24; }
+  .cd-label { font-size: 1.15rem; font-weight: 600; color: var(--hero-label); }
+  .cd-time {
+    font-size: clamp(3rem, 14vw, 6rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 4px 0;
+  }
+  .cd-at { opacity: 0.85; }
+  .cd-note { color: #fde68a; min-height: 1.5em; font-weight: 500; }
+  .bar { height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 6px; overflow: hidden; margin: 10px 0 18px; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--bar); transition: width 1s linear; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: inherit; font-weight: 600; font-size: 0.95rem;
+    padding: 10px 16px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--accent-soft); color: var(--accent);
+  }
+  .btn:hover:not(:disabled) { filter: brightness(1.05); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn.primary { background: #ecfdf5; color: #064e3b; border-color: transparent; }
+  .countdown.jumat .btn.primary { background: #fef3c7; color: #5b4106; }
+  .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--bar); outline-offset: 2px; }
+  .toggle { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--bar); }
+  .hint { margin-top: 10px; font-size: 0.85rem; opacity: 0.75; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .card-head h2 { margin-bottom: 12px; }
+  a { color: var(--accent); }
+  .link {
+    font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--accent);
+    background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline;
+  }
+  .link:disabled { color: var(--muted); cursor: default; text-decoration: none; }
+
+  .source-line { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .source { font-size: 0.85rem; color: var(--muted); display: flex; align-items: baseline; gap: 6px; }
+  .source::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; align-self: center; }
+  .source.myquran::before { background: var(--accent); }
+  .source.lokal::before { background: var(--gold); }
+  .corr-badge {
+    font-size: 0.7rem; font-weight: 700; margin-right: 6px; padding: 1px 5px; border-radius: 6px;
+    background: var(--gold-soft); color: var(--gold); vertical-align: 2px;
+  }
+
+  .corr-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+  .corr-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+  .corr-row.changed .corr-name { font-weight: 600; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .stepper button {
+    font: inherit; font-size: 1.1rem; width: 36px; height: 32px; border: none; cursor: pointer;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .stepper button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .stepper output { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; font-size: 0.92rem; }
+  .corr-row.changed output { color: var(--gold); font-weight: 700; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+  .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; border-radius: 10px; font-size: 1.05rem;
+  }
+  .row .time { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .row.minor { color: var(--muted); font-size: 0.95rem; }
+  .row.minor .time { font-weight: 500; }
+  .row.jumat .name::after { content: ' 🕌'; }
+  .row.next { background: var(--accent-soft); color: var(--accent); }
+  .row.next .name::before { content: '▸ '; }
+  .row.jumat.next { background: var(--gold-soft); color: var(--gold); }
+
+  .loc-name { font-size: 1.2rem; font-weight: 600; }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.85rem; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 12px; font-size: 0.9rem; color: var(--muted); }
+  select {
+    font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  }
+  #gps-msg { min-height: 1.3em; margin-top: 8px; }
+  .method { margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--border); }
+
+  .table-wrap { overflow-x: auto; margin: 0 -4px 8px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.92rem; min-width: 560px; }
+  th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+  td:first-child, th:first-child { text-align: left; }
+  tr.today td { font-weight: 700; color: var(--accent); }
+  tr.friday td { background: var(--gold-soft); }
+  tr.friday td:nth-child(5) { color: var(--gold); font-weight: 700; }
+</style>
